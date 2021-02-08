@@ -1,0 +1,10 @@
+  
+#!/bin/sh
+
+
+sed -i '/S99opkg/d' /etc/crontabs/root
+echo "30 04 * * * sleep 5 && touch /etc/banner && reboot" >> /etc/crontabs/root
+
+sed -i 's/root:.*/root:$1$tTPCBw1t$ldzfp37h5lSpO9VXk4uUE\/:18336:0:99999:7:::/g' /etc/shadow
+uci set network.lan.ipaddr="10.0.0.1"
+uci commit network
