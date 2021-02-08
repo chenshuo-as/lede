@@ -111,7 +111,6 @@ jobs:
           du -h /mnt/openwrt/ --max-depth=1 || true
 
       - name: Get current date
-        id: date
         run: |
           echo "date=$(date +'%m/%d_%Y_%H/%M')" >> $GITHUB_ENV
           echo "date2=$(date +'%m/%d %Y')" >> $GITHUB_ENV
@@ -119,7 +118,6 @@ jobs:
           echo "date4=$(date +'%m.%d.%Y')" >> $GITHUB_ENV
 
       - name: Organize files
-        id: organize
         run: |
           mkdir firmware && find openwrt/bin/targets/*/*/ -maxdepth 1 \
           -name "*combined*" \
@@ -148,7 +146,6 @@ jobs:
            path: ${{ env.FIRMWARE }}
      
       - name: Create release
-        uses: actions/upload-artifact@v2
         run: |
            touch release.txt
            echo -e "redmi-ac2100 🚀:\n" >> release.txt
