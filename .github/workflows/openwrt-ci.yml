@@ -80,13 +80,7 @@ jobs:
           sed -i 's/^[ \t]*//g' ./.config
           make defconfig          
 
-      - name: Load Settings.ini
-        run: |
-          cp -f devices/default-settings package/*/*/default-settings/root/etc/uci-defaults/99-default-settings
-          if [ -f "devices/default-settings" ]; then
-            echo >> package/*/*/default-settings/root/etc/uci-defaults/99-default-settings
-            cat devices/default-settings >> package/*/*/default-settings/root/etc/uci-defaults/99-default-settings
-          fi 
+
 
       - name: Default PPPOE Setting
         if: env.PPPOE_USERNAME && env.PPPOE_PASSWD
