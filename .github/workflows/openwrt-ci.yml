@@ -19,6 +19,7 @@ on:
 env:
   PPPOE_USERNAME: ${{ secrets.PPPOE_USERNAME }}
   PPPOE_PASSWD: ${{ secrets.PPPOE_PASSWD }}
+  REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
 
 jobs:
 
@@ -53,6 +54,7 @@ jobs:
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+          
       - name: Generate configuration file
         run: |
           rm -f ./.config*
@@ -109,17 +111,65 @@ jobs:
           du -h ./ --max-depth=1
           du -h /mnt/openwrt/ --max-depth=1 || true
 
+      - name: Get current date
+        id: date
+        run: |
+          echo "date=$(date +'%m/%d_%Y_%H/%M')" >> $GITHUB_ENV
+          echo "date2=$(date +'%m/%d %Y')" >> $GITHUB_ENV
+          echo "date3=$(date +'%m.%d')" >> $GITHUB_ENV
+          echo "date4=$(date +'%m.%d.%Y')" >> $GITHUB_ENV
+
+      - name: Organize files
+        id: organize
+        run: |
+          mkdir firmware && find openwrt/bin/targets/*/*/ -maxdepth 1 \
+          -name "*combined*" \
+          -or -name "*sysupgrade*" \
+          -or -name "*armvirt-64-default-rootfs*" \
+          -or -name "sha256sums" \
+          | xargs -i mv -f {} ./firmware/
+          cp openwrt/.config  ./firmware/${{matrix.target}}.config
+          cd firmware
+          echo ${{ env.date4 }} > version.txt
+          mv sha256sums ${{matrix.target}}_sha256sums
+          rename -v "s/^openwrt/${{ env.date3 }}-openwrt/" *
+          rename -v "s/xiaomi_redmi-router/redmi/" *bin
+          rename -v "s/(d-team_|xiaoyu_)//" *bin
+          rename -v "s/friendlyarm_//" *gz
+          echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+          Emoji=("🎉" "🤞" "✨" "🎁" "🎈" "🎄" "🎨" "💋" "🍓" "🍕" "🍉" "💐" "🌴" "🚀" "🛸" "🗽" "⛅" "🌈" "🔥" "⛄" "🐶" "🏅" "🦄" "🐤")
+          RANDOM=$$$(date +%s)
+          rand=$[$RANDOM % ${#Emoji[@]}]
+          echo "EMOJI=${Emoji[$rand]}" >> $GITHUB_ENV
+
       - name: Deliver firmware
         uses: actions/upload-artifact@v2
         with:
-          name: OpenWrt_firmware
-          path: ./bin/targets/
+           name: ${{ env.date3 }} redmi-ac2100
+           path: ${{ env.FIRMWARE }}
 
       - name: Upload release asset
-        if: github.event == 'release'
         uses: svenstaro/upload-release-action@v2
+        env:
+           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
         with:
-          repo_token: ${{ secrets.YOURTOKEN }}
-          file: ./artifact/firmware/*
-          tag: ${{ github.ref }}
-          file_glob: true
+           touch release.txt
+           echo -e "redmi-ac2100 🚀:\n" >> release.txt
+           files: "${{ env.FIRMWARE }}/*"
+           name: ${{ env.date2 }} ${{matrix.target}} ${{ env.EMOJI }}
+           tag_name: ${{ env.date }}_${{matrix.target}}
+           body_path: release.txt
+           
+      - name: Delete workflow runs
+        uses: GitRML/delete-workflow-runs@main
+        with:
+           retain_days: 14
+           keep_minimum_runs: 8
+
+     - name: Remove old Releases
+       uses: dev-drprasad/delete-older-releases@master
+       with:
+           keep_latest: 15
+           delete_tags: true
+       env:
+           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
