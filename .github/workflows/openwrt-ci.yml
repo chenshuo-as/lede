@@ -146,19 +146,22 @@ jobs:
         with:
            name: ${{ env.date3 }} redmi-ac2100
            path: ${{ env.FIRMWARE }}
-
+     
+      - name: Create release
+        uses: actions/upload-artifact@v2
+        run: |
+           touch release.txt
+           echo -e "redmi-ac2100 🚀:\n" >> release.txt
+         
       - name: Upload release asset
         uses: svenstaro/upload-release-action@v2
         env:
            GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
         with:
-           touch release.txt
-           echo -e "redmi-ac2100 🚀:\n" >> release.txt
-           
-           files: "${{ env.FIRMWARE }}/*"
-           name: ${{ env.date2 }} redmi-ac2100 ${{ env.EMOJI }}
-           tag_name: ${{ env.date }}_redmi-ac2100
-           body_path: release.txt
+          files: "${{ env.FIRMWARE }}/*"
+          name: ${{ env.date2 }} redmi-ac2100 ${{ env.EMOJI }}
+          tag_name: ${{ env.date }}_redmi-ac2100
+          body_path: release.txt
            
       - name: Delete workflow runs
         uses: GitRML/delete-workflow-runs@main
