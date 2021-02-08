@@ -154,6 +154,7 @@ jobs:
         with:
            touch release.txt
            echo -e "redmi-ac2100 🚀:\n" >> release.txt
+           
            files: "${{ env.FIRMWARE }}/*"
            name: ${{ env.date2 }} redmi-ac2100 ${{ env.EMOJI }}
            tag_name: ${{ env.date }}_redmi-ac2100
