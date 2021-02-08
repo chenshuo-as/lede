@@ -59,6 +59,12 @@ jobs:
             echo >> package/*/*/default-settings/root/etc/uci-defaults/99-default-settings
             cat devices/default-settings >> package/*/*/default-settings/root/etc/uci-defaults/99-default-settings
           fi 
+      - name: theme
+        run: |
+          cd package
+          mkdir openwrt-packages
+          cd openwrt-packages
+          git clone https://github.com/jerrykuku/luci-theme-argon
 
       - name: Update feeds
         run: |
